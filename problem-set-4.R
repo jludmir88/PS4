@@ -38,3 +38,34 @@ pres.elects$`Margin by %` <-  as.numeric(sub("%", "", (pres.elects$`Margin by %`
 for(i in 1:4){
   pres.elects$`Margin by %`[i] <- -1*(pres.elects$`Margin by %`[i])
 }
+# Does the same things as line 24-25 but for the margin totals, not percentages.
+for(i in 1:4){
+  end.two <- nchar(pres.elects$`Margin by Total`[i])
+  pres.elects$`Margin by Total`[i] <- substr(pres.elects$`Margin by Total`[i], 10, end.two)
+}
+# This for loop takes away the string of eight random numbers before each margin total
+# for all but the first 4 entries to align the numbers with those on wikipedia. 
+for(i in 5:48){
+  end.two <- nchar(pres.elects$`Margin by Total`[i])
+  pres.elects$`Margin by Total`[i] <- substr(pres.elects$`Margin by Total`[i], 9, end.two)
+}
+pres.elects$`Margin by Total` <-  as.numeric(gsub(",", "", (pres.elects$`Margin by Total`)))
+for(i in 1:4){
+  pres.elects$`Margin by Total`[i] <- -1*(pres.elects$`Margin by Total`[i])
+}
+pres.elects$`Vote Total` <-  as.numeric(gsub(",", "", (pres.elects$`Vote Total`)))
+pres.elects$`Vote %` <-  as.numeric(sub("%", "", (pres.elects$`Vote %` )))
+pres.elects$`Turnout` <-  as.numeric(sub("%", "", (pres.elects$`Turnout` )))
+pres.elects$`Election #` <- as.numeric(pres.elects$`Election #`)
+# First Plot - Comparing Republican and Democratic Trends in Popular Vote Percentage For Winners
+plot(NULL, xlim=c(min(pres.elects$Year), max(pres.elects$Year)), 
+    ylim=c(min(pres.elects$`Margin by %`),max(pres.elects$`Margin by %`)))
+pres.elects <- pres.elects[order(pres.elects$Year),]
+x <- pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Rep.")]
+y <- pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Dem.")]
+pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Rep.")]
+lines(pres.elects$Year[which(pres.elects$`Win Party`== "Rep.")], 
+      pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Rep.")], col="red")
+lines(pres.elects$Year[which(pres.elects$`Win Party`== "Dem.")], 
+      pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Dem.")], col = "blue")
+
