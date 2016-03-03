@@ -1,3 +1,5 @@
+# Joe Ludmir - Problem Set 4 - Professor Montgomery - Due: 3/3/16
+
 library("rvest")
 # Accessed the wikipedia page
 url <- 'https://en.wikipedia.org/wiki/List_of_United_States_presidential_elections_by_popular_vote_margin'
@@ -49,23 +51,55 @@ for(i in 5:48){
   end.two <- nchar(pres.elects$`Margin by Total`[i])
   pres.elects$`Margin by Total`[i] <- substr(pres.elects$`Margin by Total`[i], 9, end.two)
 }
+# Removes commas from vote totals and makes them numbers as opposed to strings
 pres.elects$`Margin by Total` <-  as.numeric(gsub(",", "", (pres.elects$`Margin by Total`)))
+# Makes the numbers negative that were originally so
 for(i in 1:4){
   pres.elects$`Margin by Total`[i] <- -1*(pres.elects$`Margin by Total`[i])
 }
+# Getting rid of commas and % signs and making several subsets of data numerical
 pres.elects$`Vote Total` <-  as.numeric(gsub(",", "", (pres.elects$`Vote Total`)))
 pres.elects$`Vote %` <-  as.numeric(sub("%", "", (pres.elects$`Vote %` )))
 pres.elects$`Turnout` <-  as.numeric(sub("%", "", (pres.elects$`Turnout` )))
 pres.elects$`Election #` <- as.numeric(pres.elects$`Election #`)
-# First Plot - Comparing Republican and Democratic Trends in Popular Vote Percentage For Winners
-plot(NULL, xlim=c(min(pres.elects$Year), max(pres.elects$Year)), 
-    ylim=c(min(pres.elects$`Margin by %`),max(pres.elects$`Margin by %`)))
 pres.elects <- pres.elects[order(pres.elects$Year),]
-x <- pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Rep.")]
-y <- pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Dem.")]
-pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Rep.")]
-lines(pres.elects$Year[which(pres.elects$`Win Party`== "Rep.")], 
-      pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Rep.")], col="red")
-lines(pres.elects$Year[which(pres.elects$`Win Party`== "Dem.")], 
-      pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Dem.")], col = "blue")
-
+# First Plot - Comparing Republican and Democratic Trends in Popular Vote Percentage For Winners
+# This allows for two plots to be shown simultaneously and to save them to a pdf.
+pdf("pset4.pdf", width = 10.5)
+this.par <- par(mfrow=c(1,2))
+# Creates two sets of x and y points by political party placing 
+# the margin by percent won over the course of the years.
+y1 <- pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Rep.")]
+x1 <- pres.elects$Year[which(pres.elects$`Win Party`== "Rep.")]
+x2 <- pres.elects$Year[which(pres.elects$`Win Party`== "Dem.")]
+y2 <- pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Dem.")]
+# Added colors for labels in plots
+par(col.lab = "darkmagenta", col.main = "darkmagenta")
+# Make plot and labels, resize to make sure both plots can fit
+plot(NULL, xlim=c(min(pres.elects$Year), max(pres.elects$Year)), 
+     ylim=c(5,15), main = "Trends in Winning Voting Margins by Party", 
+     xlab = "Year", ylab = "Margin by % Points", cex.axis=0.8, cex.main = 0.7)
+# Create regression lines for republicans, democrats, and for all.
+abline(lm(y1~x1), col = "red", lty = 2, lwd = 2.5)
+abline(lm(y2~x2), col = "blue", lty = 3, lwd = 2.5)
+abline(lm(pres.elects$`Margin by %`~pres.elects$Year), lwd = 2.5)
+# Create a legend
+legend("topright",c("Regression of Democrat Winners", "Regression of Republican Winners", "All"), 
+       fill = c("blue","red","black"), cex=0.5)
+# Plot 2 - Do turnout rates affect the margin of vote percentage?
+# Same logic as plot 1 but with turnout rates as opposed to time
+y3 <- pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Rep.")]
+x3 <- pres.elects$Turnout[which(pres.elects$`Win Party`== "Rep.")]
+x4 <- pres.elects$Turnout[which(pres.elects$`Win Party`== "Dem.")]
+y4 <- pres.elects$`Margin by %`[which(pres.elects$`Win Party`== "Dem.")]
+par(col.lab = "darkmagenta", col.main = "darkmagenta")
+plot(NULL, xlim=c(20,90), 
+     ylim=c(0,30), main = "Trends Between Vote Turnout and Winning Margin", 
+     xlab = "Turnout by % Points", ylab = "Margin by % Points", cex.axis=0.8,
+     cex.main = 0.55)
+abline(lm(y3~x3), col = "red", lty = 2, lwd = 1.5)
+abline(lm(y4~x4), col = "blue", lty = 3, lwd = 1.5)
+abline(lm(pres.elects$`Margin by %`~pres.elects$Turnout), lwd = 1.5)
+legend("topright",c("Regression Democrat Winners", "Regression of Republican Winners", "All"), 
+       fill = c("blue","red","black"), cex=0.45)
+dev.off()
